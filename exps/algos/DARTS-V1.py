@@ -107,7 +107,7 @@ def main(xargs):
   train_data, valid_data, xshape, class_num = get_datasets(xargs.dataset, xargs.data_path, -1)
   #config_path = 'configs/nas-benchmark/algos/DARTS.config'
   config = load_config(xargs.config_path, {'class_num': class_num, 'xshape': xshape}, logger)
-  search_loader, _, valid_loader = get_nas_search_loaders(train_data, valid_data, xargs.dataset, 'configs/nas-benchmark/', config.batch_size, xargs.workers)
+  search_loader, _, valid_loader = get_nas_search_loaders(train_data, valid_data, xargs.dataset, '../../configs/nas-benchmark/', config.batch_size, xargs.workers)
   logger.log('||||||| {:10s} ||||||| Search-Loader-Num={:}, Valid-Loader-Num={:}, batch size={:}'.format(xargs.dataset, len(search_loader), len(valid_loader), config.batch_size))
   logger.log('||||||| {:10s} ||||||| Config={:}'.format(xargs.dataset, config))
 

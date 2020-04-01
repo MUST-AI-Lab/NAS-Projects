@@ -136,16 +136,26 @@ def main(xargs):
 
   train_data, valid_data, xshape, class_num = get_datasets(xargs.dataset, xargs.data_path, -1)
   config = load_config(xargs.config_path, {'class_num': class_num, 'xshape': xshape}, logger)
-  search_loader, _, valid_loader = get_nas_search_loaders(train_data, valid_data, xargs.dataset, 'configs/nas-benchmark/', \
+  search_loader, _, valid_loader = get_nas_search_loaders(train_data, valid_data, xargs.dataset, '../../configs/nas-benchmark/', \
                                         (config.batch_size, config.test_batch_size), xargs.workers)
   logger.log('||||||| {:10s} ||||||| Search-Loader-Num={:}, Valid-Loader-Num={:}, batch size={:}'.format(xargs.dataset, len(search_loader), len(valid_loader), config.batch_size))
   logger.log('||||||| {:10s} ||||||| Config={:}'.format(xargs.dataset, config))
 
   search_space = get_search_spaces('cell', xargs.search_space_name)
+
+  # if xargs.model_config is None:
+  #   model_config = dict2config({'name': 'SETN', 'C': xargs.channel, 'N': xargs.num_cells,
+  #                               'max_nodes': xargs.max_nodes, 'num_classes': class_num,
+  #                               'space': search_space,
+  #                               'affine': False, 'track_running_stats': bool(xargs.track_running_stats)}, None)
+  # else:
+  #   model_config = load_config(xargs.model_config, {'num_classes': class_num, 'space'    : search_space,
+  #                                                   'affine'     : False, 'track_running_stats': bool(xargs.track_running_stats)}, None)
+
   model_config = dict2config({'name': 'SETN', 'C': xargs.channel, 'N': xargs.num_cells,
                               'max_nodes': xargs.max_nodes, 'num_classes': class_num,
-                              'space'    : search_space,
-                              'affine'   : False, 'track_running_stats': bool(xargs.track_running_stats)}, None)
+                              'space': search_space,
+                              'affine': False, 'track_running_stats': bool(xargs.track_running_stats)}, None)
   logger.log('search space : {:}'.format(search_space))
   search_model = get_cell_based_tiny_net(model_config)
   
@@ -267,6 +277,7 @@ if __name__ == '__main__':
   parser.add_argument('--select_num',         type=int,   help='The number of selected architectures to evaluate.')
   parser.add_argument('--track_running_stats',type=int,   choices=[0,1],help='Whether use track_running_stats or not in the BN layer.')
   parser.add_argument('--config_path',        type=str,   help='The path of the configuration.')
+  # parser.add_argument('--model_config',       type=str,   help='The path of the model configuration. When this arg is set, it will cover max_nodes / channels / num_cells.')
   # architecture leraning rate
   parser.add_argument('--arch_learning_rate', type=float, default=3e-4, help='learning rate for arch encoding')
   parser.add_argument('--arch_weight_decay',  type=float, default=1e-3, help='weight decay for arch encoding')

@@ -195,3 +195,59 @@ class NASNetSearchCell(nn.Module):
       states.append( sum(clist) )
 
     return torch.cat(states[-self._multiplier:], dim=1)
+
+    # uniform random sampling per iteration, SETN
+  def forward_urs(self, s0, s1):
+    s0 = self.preprocess0(s0)
+    s1 = self.preprocess1(s1)
+
+    states = [s0, s1]
+    for i in range(self._steps):
+      while True:  # to avoid select zero for all ops
+        sops, has_non_zero = [], False
+        for j, h in enumerate(states):
+          node_str = '{:}<-{:}'.format(i, j)
+          candidates = self.edges[node_str]
+          select_op = random.choice(candidates)
+          sops.append(select_op)
+          if not hasattr(select_op, 'is_zero') or select_op.is_zero is False: has_non_zero = True
+        if has_non_zero: break
+      inter_nodes = []
+      for j, select_op in enumerate(sops):
+        inter_nodes.append(select_op(states[j]))
+      states.append(sum(inter_nodes))
+    return torch.cat(states[-self._multiplier:], dim=1)
+
+    # select the argmax
+
+  def forward_select(self, s0, s1, weightss):
+    s0 = self.preprocess0(s0)
+    s1 = self.preprocess1(s1)
+
+    states = [s0, s1]
+    for i in range(self._steps):
+      clist = []
+      for j, h in enumerate(states):
+        node_str = '{:}<-{:}'.format(i, j)
+        weights = weightss[self.edge2index[node_str]]
+        clist.append(self.edges[node_str][weights.argmax().item()](states[j]))
+        # inter_nodes.append( sum( layer(nodes[j]) * w for layer, w in zip(self.edges[node_str], weights) ) )
+      states.append(sum(clist))
+    return torch.cat(states[-self._multiplier:], dim=1)
+
+    # forward with a specific structure
+
+  def forward_dynamic(self, s0, s1, structure):
+    s0 = self.preprocess0(s0)
+    s1 = self.preprocess1(s1)
+
+    states = [s0, s1]
+    for i in range(self._steps):
+      cur_op_node = structure.nodes[i - 1]
+      clist = []
+      for op_name, j in cur_op_node:
+        node_str = '{:}<-{:}'.format(i, j)
+        op_index = self.op_names.index(op_name)
+        clist.append(self.edges[node_str][op_index](states[j]))
+      states.append(sum(clist))
+    return torch.cat(states[-self._multiplier:], dim=1)

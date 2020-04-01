@@ -43,7 +43,7 @@ python --version
 python ./exps/basic-main.py --dataset ${dataset} \
 	--data_path ${xpath} --model_source nas \
 	--model_config ./configs/archs/NAS-${base}-${model}.config \
-	--optim_config ./configs/opts/NAS-${base}.config \
+	--optim_config ./configs/opts/NAS-${base}-V2.config \
 	--procedure    basic \
 	--save_dir     ${save_dir} \
 	--cutout_length ${cutout_length} \

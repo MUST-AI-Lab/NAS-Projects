@@ -4,6 +4,7 @@
 import torch
 import torch.nn as nn
 from copy import deepcopy
+from typing import List, Text, Dict
 from .search_cells     import NASNetSearchCell as SearchCell
 from .genotypes        import Structure
 
@@ -22,8 +23,8 @@ class NASNetworkDARTS(nn.Module):
                     nn.BatchNorm2d(C*stem_multiplier))
   
     # config for each layer
-    layer_channels   = [C    ] * N + [C*2 ] + [C*2  ] * (N-1) + [C*4 ] + [C*4  ] * (N-1)
-    layer_reductions = [False] * N + [True] + [False] * (N-1) + [True] + [False] * (N-1)
+    layer_channels   = [C    ] * N + [C*2 ] + [C*2  ] * N + [C*4 ] + [C*4  ] * N
+    layer_reductions = [False] * N + [True] + [False] * N + [True] + [False] * N
 
     num_edge, edge2index = None, None
     C_prev_prev, C_prev, C_curr, reduction_prev = C*stem_multiplier, C*stem_multiplier, C, False
@@ -68,9 +69,10 @@ class NASNetworkDARTS(nn.Module):
   def extra_repr(self):
     return ('{name}(C={_C}, N={_layerN}, steps={_steps}, multiplier={_multiplier}, L={_Layer})'.format(name=self.__class__.__name__, **self.__dict__))
 
-  def genotype(self):
+  def genotype(self) -> Dict[Text, List]:
     def _parse(weights):
       gene = []
+      n = 0
       for i in range(self._steps):
         edges = []
         for j in range(2+i):
@@ -81,13 +83,18 @@ class NASNetworkDARTS(nn.Module):
             edges.append( (op_name, j, ws[k]) )
         edges = sorted(edges, key=lambda x: -x[-1])
         selected_edges = edges[:2]
+        for x in selected_edges:
+          if x[0] == 'skip_connect':
+            n += 1
+            print("test2 the number of skip-connect: " + str(n))
         gene.append( tuple(selected_edges) )
-      return gene
+      return gene, n
     with torch.no_grad():
-      gene_normal = _parse(torch.softmax(self.arch_normal_parameters, dim=-1).cpu().numpy())
-      gene_reduce = _parse(torch.softmax(self.arch_reduce_parameters, dim=-1).cpu().numpy())
+      gene_normal, n_normal = _parse(torch.softmax(self.arch_normal_parameters, dim=-1).cpu().numpy())
+      gene_reduce, n_reduce = _parse(torch.softmax(self.arch_reduce_parameters, dim=-1).cpu().numpy())
     return {'normal': gene_normal, 'normal_concat': list(range(2+self._steps-self._multiplier, self._steps+2)),
-            'reduce': gene_reduce, 'reduce_concat': list(range(2+self._steps-self._multiplier, self._steps+2))}
+            'reduce': gene_reduce, 'reduce_concat': list(range(2+self._steps-self._multiplier, self._steps+2)),
+            'n_normal': n_normal, 'n_reduce': n_reduce}
 
   def forward(self, inputs):
 

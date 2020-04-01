@@ -189,7 +189,7 @@ def get_nas_search_loaders(train_data, valid_data, dataset, config_root, batch_s
     batch, test_batch = batch_size, batch_size
   if dataset == 'cifar10':
     #split_Fpath = 'configs/nas-benchmark/cifar-split.txt'
-    cifar_split = load_config('{:}/cifar-split.txt'.format(config_root), None, None)
+    cifar_split = load_config('{:}cifar-split.txt'.format(config_root), None, None)
     train_split, valid_split = cifar_split.train, cifar_split.valid # search over the proposed training and validation set
     #logger.log('Load split file from {:}'.format(split_Fpath))      # they are two disjoint groups in the original CIFAR-10 training set
     # To split data

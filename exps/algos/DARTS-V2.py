@@ -18,6 +18,7 @@ from utils        import get_model_infos, obtain_accuracy
 from log_utils    import AverageMeter, time_string, convert_secs2time
 from models       import get_cell_based_tiny_net, get_search_spaces
 from nas_201_api  import NASBench201API as API
+from torch.autograd import Variable
 
 
 def _concat(xs):
@@ -61,7 +62,7 @@ def backward_step_unrolled(network, criterion, base_inputs, base_targets, w_opti
   model_dict  = unrolled_model.state_dict()
   new_params, offset = {}, 0
   for k, v in network.named_parameters():
-    if 'arch_parameters' in k: continue
+    if 'arch_normal_parameters' in k or 'arch_reduce_parameters': continue
     v_length = np.prod(v.size())
     new_params[k] = params[offset: offset+v_length].view(v.size())
     offset += v_length
@@ -73,16 +74,23 @@ def backward_step_unrolled(network, criterion, base_inputs, base_targets, w_opti
   unrolled_loss = criterion(unrolled_logits, arch_targets)
   unrolled_loss.backward()
 
-  dalpha = unrolled_model.module.arch_parameters.grad
+  dalpha = [v.grad for v in unrolled_model.module.get_alphas()]
   vector = [v.grad.data for v in unrolled_model.module.get_weights()]
-  [implicit_grads] = _hessian_vector_product(vector, network, criterion, base_inputs, base_targets)
-  
-  dalpha.data.sub_(LR, implicit_grads.data)
+  implicit_grads = _hessian_vector_product(vector, network, criterion, base_inputs, base_targets)
 
-  if network.module.arch_parameters.grad is None:
-    network.module.arch_parameters.grad = deepcopy( dalpha )
-  else:
-    network.module.arch_parameters.grad.data.copy_( dalpha.data )
+  for g, ig in zip(dalpha, implicit_grads):
+    g.data.sub_(LR, ig.data)
+
+  for v, g in zip(network.module.get_alphas(), dalpha):
+    if v.grad is None:
+      v.grad = Variable(g.data)
+    else:
+      v.grad.data.copy_(g.data)
+
+  # if network.module.arch_parameters.grad is None:
+  #   network.module.arch_parameters.grad = deepcopy( dalpha )
+  # else:
+  #   network.module.arch_parameters.grad.data.copy_( dalpha.data )
   return unrolled_loss.detach(), unrolled_logits.detach()
   
 
@@ -170,15 +178,20 @@ def main(xargs):
 
   train_data, valid_data, xshape, class_num = get_datasets(xargs.dataset, xargs.data_path, -1)
   config = load_config(xargs.config_path, {'class_num': class_num, 'xshape': xshape}, logger)
-  search_loader, _, valid_loader = get_nas_search_loaders(train_data, valid_data, xargs.dataset, 'configs/nas-benchmark/', config.batch_size, xargs.workers)
+  search_loader, _, valid_loader = get_nas_search_loaders(train_data, valid_data, xargs.dataset, '/disk1/hw/AutoDL-Projects/configs/nas-benchmark/', config.batch_size, xargs.workers)
   logger.log('||||||| {:10s} ||||||| Search-Loader-Num={:}, Valid-Loader-Num={:}, batch size={:}'.format(xargs.dataset, len(search_loader), len(valid_loader), config.batch_size))
   logger.log('||||||| {:10s} ||||||| Config={:}'.format(xargs.dataset, config))
 
   search_space = get_search_spaces('cell', xargs.search_space_name)
-  model_config = dict2config({'name': 'DARTS-V2', 'C': xargs.channel, 'N': xargs.num_cells,
-                              'max_nodes': xargs.max_nodes, 'num_classes': class_num,
-                              'space'    : search_space,
-                              'affine'   : False, 'track_running_stats': bool(xargs.track_running_stats)}, None)
+
+  if xargs.model_config is None:
+    model_config = dict2config({'name': 'DARTS-V2', 'C': xargs.channel, 'N': xargs.num_cells,
+                                'max_nodes': xargs.max_nodes, 'num_classes': class_num,
+                                'space': search_space,
+                                'affine': False, 'track_running_stats': bool(xargs.track_running_stats)}, None)
+  else:
+    model_config = load_config(xargs.model_config, {'num_classes': class_num, 'space'    : search_space,
+                                                    'affine'     : False, 'track_running_stats': bool(xargs.track_running_stats)}, None)
   search_model = get_cell_based_tiny_net(model_config)
   logger.log('search-model :\n{:}'.format(search_model))
   
@@ -239,6 +252,7 @@ def main(xargs):
     else: find_best = False
 
     genotypes[epoch] = search_model.genotype()
+    logger.log("test3 the number of skip-connect: " + str(genotypes[epoch]['n_normal']))
     logger.log('<<<--->>> The {:}-th epoch : {:}'.format(epoch_str, genotypes[epoch]))
     # save checkpoint
     save_path = save_checkpoint({'epoch' : epoch + 1,
@@ -259,16 +273,20 @@ def main(xargs):
       logger.log('<<<--->>> The {:}-th epoch : find the highest validation accuracy : {:.2f}%.'.format(epoch_str, valid_a_top1))
       copy_checkpoint(model_base_path, model_best_path, logger)
     with torch.no_grad():
-      logger.log('arch-parameters :\n{:}'.format( nn.functional.softmax(search_model.arch_parameters, dim=-1).cpu() ))
+      logger.log('{:}'.format(search_model.show_alphas()))
     if api is not None: logger.log('{:}'.format(api.query_by_arch( genotypes[epoch] )))
     # measure elapsed time
     epoch_time.update(time.time() - start_time)
     start_time = time.time()
 
+    if genotypes[epoch]['n_normal'] >= 2:
+      break
+
   logger.log('\n' + '-'*100)
   # check the performance from the architecture dataset
-  logger.log('DARTS-V2 : run {:} epochs, cost {:.1f} s, last-geno is {:}.'.format(total_epoch, search_time.sum, genotypes[total_epoch-1]))
-  if api is not None: logger.log('{:}'.format( api.query_by_arch(genotypes[total_epoch-1]) ))
+  # logger.log('DARTS-V2 : run {:} epochs, cost {:.1f} s, last-geno is {:}.'.format(total_epoch, search_time.sum, genotypes[total_epoch-1]))
+  logger.log('DARTS-V2 : run {:} epochs, cost {:.1f} s.'.format(total_epoch, search_time.sum))
+  # if api is not None: logger.log('{:}'.format( api.query_by_arch(genotypes[total_epoch-1]) ))
   logger.close()
   
 
@@ -284,6 +302,8 @@ if __name__ == '__main__':
   parser.add_argument('--channel',            type=int,   help='The number of channels.')
   parser.add_argument('--num_cells',          type=int,   help='The number of cells in one stage.')
   parser.add_argument('--track_running_stats',type=int,   choices=[0,1],help='Whether use track_running_stats or not in the BN layer.')
+  parser.add_argument('--model_config', type=str,
+                      help='The path of the model configuration. When this arg is set, it will cover max_nodes / channels / num_cells.')
   # architecture leraning rate
   parser.add_argument('--arch_learning_rate', type=float, default=3e-4, help='learning rate for arch encoding')
   parser.add_argument('--arch_weight_decay',  type=float, default=1e-3, help='weight decay for arch encoding')

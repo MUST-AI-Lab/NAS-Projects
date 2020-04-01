@@ -25,14 +25,14 @@ else
   data_path="$TORCH_HOME/cifar.python/ImageNet16"
 fi
 
-save_dir=./output/search-cell-${space}/DARTS-V1-${dataset}-BN${BN}
+save_dir=./output/search-cell-${space}/DARTS-V2-${dataset}-BN${BN}
 
-OMP_NUM_THREADS=4 python ./exps/algos/DARTS-V1.py \
+OMP_NUM_THREADS=4 python ./exps/algos/DARTS-V2.py \
 	--save_dir ${save_dir} \
 	--dataset ${dataset} --data_path ${data_path} \
 	--search_space_name ${space} \
 	--config_path configs/search-opts/DARTS-NASNet-CIFAR.config \
-	--model_config configs/search-archs/DARTS-NASNet-CIFAR.config \
+	--model_config configs/search-archs/DARTS_V2-NASNet-CIFAR.config \
 	--track_running_stats ${BN} \
 	--arch_learning_rate 0.0003 --arch_weight_decay 0.001 \
 	--workers 4 --print_freq 200 --rand_seed ${seed}
