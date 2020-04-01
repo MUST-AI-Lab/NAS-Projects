@@ -180,16 +180,32 @@ python train.py --auxiliary --cutout            # CIFAR-10
 |Model| Error(%)| Search cost(GPU days)	|Genotypes|	Val_acc of arch|	Search-seed|
 |:--:|:--:|:--:|:--:|:--:|:--:|
 |DARTS+|	2.50±0.11|	0.4|	Paper|	-|	-|
-|DARTS+|	-	|0.58	|Searched 1|	85.64|	233|
+|DARTS+|	-	|0.58	|Searched 1|	85.64|233|
 |DARTS+|	-	|0.52	|Searched 2	|85.99	|694|
 |DARTS+|	2.97±0.07	|0.73	|Searched 3|	88.48|	1113|
-|DARTS+|	-	|0.54	|Searched 4	86.38|	3763|
+|DARTS+|	-	|0.54	|Searched 4|	86.38|	3763|
 |DARTS+(V1)|	-	|0.40|	Searched 1	|85.64|	38|
 |DARTS+(V1)|	-	|0.61|	Searched 2	|85.99|	2981|
 |DARTS+(V1)|		|0.31|	Searched 3	|86.39	|8632|
 |DARTS+(V1)|	-|	0.23|	Searched 4	|83.94	|3659|
 
 The command to search and train are same as DARTS.
+
+#### Comparison
+|Model| Error(%)| Search cost(GPU days)	|Genotypes|	Params(M)|	Train cost()GPU days|
+|:--:|:--:|:--:|:--:|:--:|:--:|
+|DARTS-V1|	3.00±0.14|	0.25|	Paper|	3.3|	-|
+|DARTS-V2|	2.76±0.09	|1	| Paper|	3.3|	-|
+|GDAS|	2.93	|0.21	|Paper 	|3.4	|-|
+|NASP|	2.83±0.09	|0.1	|Paper |	3.3|	-|
+|NASP(12ops)|	2.44±0.04	|0.2	|Paper|	7.4|	-|
+|DARTS-V1|	2.99±0.04	|0.35|	Our Searched	([quark0/darts](https://github.com/quark0/darts))|3.20|	1.71|
+|DARTS-V1|	3.56±0.04	|0.26|	Our Searched	(NAS-Projects)|1.73|	1.33|
+|DARTS-V2|	3.02±0.16	|0.79|	Our Searched	([quark0/darts](https://github.com/quark0/darts))|3.17|	1.46|
+|DARTS-V2|		|1.43|	Our Searched	(NAS-Projects)||	|
+|GDAS|	2.89±0.05	|0.19|	Our Searched |3.77	|2.25|
+|NASP|	3.34±0.07	|0.25	|Our Searched |	2.40|	1.29|
+|NASP(12ops)|	2.44±0.04	|0.25	|Our Searched|	8.27|	1.5|
 
 ## Citation
 
