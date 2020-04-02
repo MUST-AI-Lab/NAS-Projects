@@ -103,12 +103,12 @@ Some methods use knowledge distillation (KD), which require pre-trained models. 
 |DARTS-V1|	3.00±0.14	|0.25	|Paper	|-|	-|
 |DARTS-V1|	-	|0.26|	Searched 1|	89.24|	90627|
 |DARTS-V1|	-	|0.26|	Searched 2|	89.11|	77047|
-|DARTS-V1|	3.56±0.04	|0.26	|Searched 3	|89.27	|90451|
+|**DARTS-V1**|	3.56±0.04	|0.26	|Searched 3	|89.27	|90451|
 |DARTS-V1|	-	|0.26	|Searched 4|	89.10|	2189|
 |DARTS-V2|	2.76±0.09|	1|	Paper	|-	|-|
 |DARTS-V2|	-|	1.32|	Searched 1	|89.13	|52665|
 |DARTS-V2|	-	|1.33	|Searched 2	|89.16	|68513|
-|DARTS-V2|	|1.43	|Searched 3|	89.20|	33376|
+|**DARTS-V2**|	|1.43	|Searched 3|	89.20|	33376|
 |DARTS-V2|	-|	1.33	|Searched 4	|89.17|	74480|
 
 The command to search architectures.
@@ -129,7 +129,7 @@ CUDA_VISIBLE_DEVICES=0 bash ./scripts/nas-infer-train.sh cifar10  DARTS_V2 96 -1
 |GDAS|	-|	0.19|	Searched 1	|78.26	|11110|
 |GDAS|	-|	0.19|	Searched 2	|78.23	|21945|
 |GDAS|	-|	0.19|	Searched 3	|78.03	|39472|
-|GDAS|	2.89±0.05	|0.19|	Searched 4|	78.60|	49342|
+|**GDAS**|	2.89±0.05	|0.19|	Searched 4|	78.60|	49342|
 
 The command to search architectures.
 ```
@@ -145,11 +145,11 @@ CUDA_VISIBLE_DEVICES=0 bash ./scripts/nas-infer-train.sh cifar10  GDAS_V1 96 -1
 |DARTS+|	2.50±0.11|	0.4|	Paper|	-|	-|
 |DARTS+|	-|	0.42|	Searched 1	|84.06|	67841|
 |DARTS+|	-|	0.56|	Searched 2|	85.41|	68221|
-|DARTS+|	2.97±0.07|	0.51	|Searched 3	|85.78|	99594|
+|**DARTS+**|	2.97±0.07|	0.51	|Searched 3	|85.78|	99594|
 |DARTS+|	-|	0.49	|Searched 4	|84.75	|22713|
 |DARTS+(V1)|	-	|0.14|	Searched 1	|86.02|	38979|
 |DARTS+(V1)|	-	|0.16| Searched 2	|85.56	|57053|
-|DARTS+(V1)|	3.19(training)|	0.17	|Searched 3|87.20	|34853|
+|**DARTS+(V1)**|	3.19/3.20(training)|	0.17	|Searched 3|87.20	|34853|
 |DARTS+(V1)|	-|	0.14	|Searched 4|	85.28|	21462|
 
 The command to search and train are same as DARTS.
@@ -160,12 +160,12 @@ Run on [quark0/darts](https://github.com/quark0/darts)
 |DARTS-V1|	3.00±0.14	|0.25|	Paper	|-|	-|
 |DARTS-V1|	-	|0.38|	Searched 1	|88.97|	2|
 |DARTS-V1|	-	|0.35|	Searched 2	|89.08|	444|
-|DARTS-V1|	2.99±0.04|	0.35	|Searched 3	|89.31	|666|
+|**DARTS-V1**|	2.99±0.04|	0.35	|Searched 3	|89.31	|666|
 |DARTS-V1|	-	|0.34|	Searched 4	|89.30	|999|
 |DARTS-V2|	2.76±0.09|	1	|Paper|	-	|-|
 |DARTS-V2|	-	|0.83	|Searched 1	|89.23|	2|
 |DARTS-V2|	-	|1.04	|Searched 2	|89.17|	555|
-|DARTS-V2|	3.02±0.16|	0.79	|Searched 3	|89.34|	777|
+|**DARTS-V2**|	3.02±0.16|	0.79	|Searched 3	|89.34|	777|
 |DARTS-V2|	-|	0.79|	Searched 4	|89.02|	888|
 
 The command to search architectures.
@@ -182,14 +182,19 @@ python train.py --auxiliary --cutout            # CIFAR-10
 |DARTS+|	2.50±0.11|	0.4|	Paper|	-|	-|
 |DARTS+|	-	|0.58	|Searched 1|	85.64|233|
 |DARTS+|	-	|0.52	|Searched 2	|85.99	|694|
-|DARTS+|	2.97±0.07	|0.73	|Searched 3|	88.48|	1113|
+|**DARTS+**|	2.97±0.07	|0.73	|Searched 3|	88.48|	1113|
 |DARTS+|	-	|0.54	|Searched 4|	86.38|	3763|
 |DARTS+(V1)|	-	|0.40|	Searched 1	|85.64|	38|
 |DARTS+(V1)|	-	|0.61|	Searched 2	|85.99|	2981|
-|DARTS+(V1)|		|0.31|	Searched 3	|86.39	|8632|
+|**DARTS+(V1)**|	2.65	|0.31|	Searched 3	|86.39	|8632|
 |DARTS+(V1)|	-|	0.23|	Searched 4	|83.94	|3659|
 
-The command to search and train are same as DARTS.
+The command to search and train the DARTS+ are same as DARTS.
+
+P.S. The searched architecture in **DARTS+(V1)** is out of memory when training by the [quark0/darts](https://github.com/quark0/darts). So I train it by the NAS-Projects code. The command is 
+```
+CUDA_VISIBLE_DEVICES=0 bash ./scripts/nas-infer-train.sh cifar10  DARTS_V1 96 -1
+```
 
 #### Comparison
 |Model| Error(%)| Search cost(GPU days)	|Genotypes|	Params(M)|	Train cost()GPU days|
