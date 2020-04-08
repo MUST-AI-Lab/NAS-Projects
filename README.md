@@ -149,7 +149,7 @@ CUDA_VISIBLE_DEVICES=0 bash ./scripts/nas-infer-train.sh cifar10  GDAS_V1 96 -1
 |DARTS+|	-|	0.49	|Searched 4	|84.75	|22713|
 |DARTS+(V1)|	-	|0.14|	Searched 1	|86.02|	38979|
 |DARTS+(V1)|	-	|0.16| Searched 2	|85.56	|57053|
-|**DARTS+(V1)**|	3.19/3.20(training)|	0.17	|Searched 3|87.20	|34853|
+|**DARTS+(V1)**|	3.19±0.00|	0.17	|Searched 3|87.20	|34853|
 |DARTS+(V1)|	-|	0.14	|Searched 4|	85.28|	21462|
 
 The command to search and train are same as DARTS.
@@ -186,7 +186,7 @@ python train.py --auxiliary --cutout            # CIFAR-10
 |DARTS+|	-	|0.54	|Searched 4|	86.38|	3763|
 |DARTS+(V1)|	-	|0.40|	Searched 1	|85.64|	38|
 |DARTS+(V1)|	-	|0.61|	Searched 2	|85.99|	2981|
-|**DARTS+(V1)**|	2.65	|0.31|	Searched 3	|86.39	|8632|
+|**DARTS+(V1)**|	2.69±0.06	|0.31|	Searched 3	|86.39	|8632|
 |DARTS+(V1)|	-|	0.23|	Searched 4	|83.94	|3659|
 
 The command to search and train the DARTS+ are same as DARTS.
