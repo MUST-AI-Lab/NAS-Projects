@@ -154,7 +154,7 @@ CUDA_VISIBLE_DEVICES=0 bash ./scripts/nas-infer-train.sh cifar10  GDAS_V1 96 -1
 
 The command to search and train are same as DARTS.
 
-Run on [quark0/darts](https://github.com/quark0/darts)
+#### Run on [quark0/darts](https://github.com/quark0/darts)
 |Model| Error(%)| Search cost(GPU days)	|Genotypes|	Val_acc of arch|	Search-seed|
 |:--:|:--:|:--:|:--:|:--:|:--:|
 |DARTS-V1|	3.00±0.14	|0.25|	Paper	|-|	-|
@@ -195,6 +195,11 @@ P.S. The searched architecture in **DARTS+(V1)** is out of memory when training 
 ```
 CUDA_VISIBLE_DEVICES=0 bash ./scripts/nas-infer-train.sh cifar10  DARTS_V1 96 -1
 ```
+#### Run on [DenseNAS](https://github.com/JaminFong/DenseNAS)
+|Model| Error(%)| Search cost(GPU days)	|Search Space|	Params(M)|	Val_acc of arch|latency|Search-seed|
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+|DenseNAS|	13.15|	0.75|	mbv2|	2.05|	58.44| 3.66| 2|
+|DenseNAS|	11.51|	0.73|	Darts|	0.5|	21.04| 5.68| 2|
 
 #### Comparison
 |Model| Error(%)| Search cost(GPU days)	|Genotypes|	Params(M)|	Train cost()GPU days|
